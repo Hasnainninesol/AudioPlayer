@@ -21,6 +21,7 @@ class PlayerActivity : BaseActivity(), Player.Listener {
         _binding = ActivityPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
         init()
+        observer()
         if (position != -1) {
             newSongPlay()
         }
@@ -28,31 +29,52 @@ class PlayerActivity : BaseActivity(), Player.Listener {
         {
             btnPlay.setOnClickListener { playSong() }
             btnPause.setOnClickListener { pauseSong() }
-        }
-        with(binding) {
-            seekBar.max = exoPlayer.contentDuration.toInt()
             seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                     exoPlayer.seekTo(p1.toLong())
+
                 }
 
                 override fun onStartTrackingTouch(p0: SeekBar?) {
-                    TODO("Not yet implemented")
+
                 }
 
                 override fun onStopTrackingTouch(p0: SeekBar?) {
-                    TODO("Not yet implemented")
+                    exoPlayer.play()
                 }
 
             })
         }
-        Handler().post {
-            with(binding) {
-                seekBar.progress = exoPlayer.currentPosition.toInt()
-            }
+        runOnUiThread {
+            Handler().postDelayed({
+                if (exoPlayer.isPlaying) {
+                    val mCurrentPosition: Int = (exoPlayer.currentPosition.toInt())
+                    binding.seekBar.progress = mCurrentPosition
+                    getCurrentTimer()
+                }
+            }, 500)
         }
 
 
+    }
+
+    private fun observer() {
+        mViewModel.isPlay.observe(this) {
+            if (it) {
+                with(binding) {
+                    btnPause.visibility = View.VISIBLE
+                    btnPlay.visibility = View.GONE
+                }
+            }
+        }
+        mViewModel.isPause.observe(this) {
+            if (it) {
+                with(binding) {
+                    btnPause.visibility = View.GONE
+                    btnPlay.visibility = View.VISIBLE
+                }
+            }
+        }
     }
 
     private fun init() {
@@ -62,23 +84,17 @@ class PlayerActivity : BaseActivity(), Player.Listener {
     }
 
     private fun pauseSong() {
-        with(binding)
-        {
-            btnPause.visibility = View.GONE
-            btnPlay.visibility = View.VISIBLE
-        }
         if (exoPlayer.isPlaying) {
+            mViewModel.setIsPlay(false)
+            mViewModel.setIsPause(true)
             exoPlayer.pause()
         }
     }
 
     private fun playSong() {
-        with(binding)
-        {
-            btnPause.visibility = View.VISIBLE
-            btnPlay.visibility = View.GONE
-        }
         if (!exoPlayer.isPlaying) {
+            mViewModel.setIsPlay(true)
+            mViewModel.setIsPause(false)
             exoPlayer.play()
         }
     }
@@ -87,8 +103,8 @@ class PlayerActivity : BaseActivity(), Player.Listener {
         with(binding)
         {
             songTitle.text = mViewModel.songList.value!![position].name
-            btnPause.visibility = View.VISIBLE
-            btnPlay.visibility = View.GONE
+            mViewModel.setIsPause(false)
+            mViewModel.setIsPlay(true)
         }
         if (exoPlayer.isPlaying) {
             exoPlayer.release()
@@ -97,13 +113,27 @@ class PlayerActivity : BaseActivity(), Player.Listener {
         exoPlayer.setMediaItem(mediaItem)
         exoPlayer.prepare()
         exoPlayer.play()
+        getDurationTimer()
+
+    }
+
+    private fun getDurationTimer() {
+        binding.seekBar.max = (exoPlayer.duration / 1000).toInt()
+        val minutes: Long = exoPlayer.duration / 1000 / 60
+        val seconds = (exoPlayer.duration / 1000 % 60).toInt()
+        binding.totalTime.text = "$minutes:$seconds"
+    }
+
+    private fun getCurrentTimer() {
+        val mMinutes = (exoPlayer.duration / 1000) / 60
+        val mSeconds = ((exoPlayer.duration / 1000) % 60)
+        binding.currentTime.text = "$mMinutes:$mSeconds"
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        if (exoPlayer.isPlaying) {
-            exoPlayer.release()
-        }
+        exoPlayer.release()
     }
+
 
 }

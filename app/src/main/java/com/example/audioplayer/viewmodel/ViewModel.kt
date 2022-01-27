@@ -11,6 +11,9 @@ import kotlinx.coroutines.launch
 
 class ViewModel(application: Application, private val audioRepo: AudioRepo) :
     AndroidViewModel(application) {
+    var isPlay: MutableLiveData<Boolean> = MutableLiveData()
+    var isPause: MutableLiveData<Boolean> = MutableLiveData()
+    var songName: MutableLiveData<String> = MutableLiveData()
     var songList: MutableLiveData<ArrayList<Songs>> = MutableLiveData()
     fun getAllSongs() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -18,5 +21,17 @@ class ViewModel(application: Application, private val audioRepo: AudioRepo) :
         }.invokeOnCompletion {
             songList.postValue(audioRepo.getSongsList())
         }
+    }
+
+    fun setIsPlay(boolean: Boolean) {
+        isPlay!!.postValue(boolean)
+    }
+
+    fun setIsPause(boolean: Boolean) {
+        isPause!!.postValue(boolean)
+    }
+
+    fun setSongName(name: String) {
+        songName!!.postValue(name)
     }
 }
