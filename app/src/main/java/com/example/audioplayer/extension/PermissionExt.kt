@@ -3,14 +3,10 @@ package com.example.audioplayer.extension
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
-import android.provider.MediaStore
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.example.audioplayer.REQUEST_WRITE_EXTERNAL_STORAGE
-import com.example.audioplayer.modelclass.Songs
-import com.example.audioplayer.utils.FileUtils
 
 var isPermission = true
 fun Activity.isPermission() {

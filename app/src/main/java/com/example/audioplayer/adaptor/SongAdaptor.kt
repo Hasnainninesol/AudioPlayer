@@ -1,12 +1,15 @@
 package com.example.audioplayer.adaptor
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.audioplayer.POSITION
+import com.example.audioplayer.activites.PlayerActivity
 import com.example.audioplayer.databinding.SongitemBinding
 import com.example.audioplayer.modelclass.Songs
+
 
 class SongAdaptor(val context: Context) :
     RecyclerView.Adapter<SongAdaptor.MyViewHolder>() {
@@ -23,13 +26,15 @@ class SongAdaptor(val context: Context) :
             with(binder)
             {
                 tvSongName.text = mData[position].name
-                btnPlay.setOnClickListener {
-                    it.visibility = View.GONE
-                    btnPause.visibility = View.VISIBLE
-                }
-                btnPause.setOnClickListener {
-                    it.visibility = View.GONE
-                    btnPlay.visibility = View.VISIBLE
+                mItem.setOnClickListener {
+                    context.startActivity(
+                        Intent(
+                            context,
+                            PlayerActivity::class.java
+                        ).apply {
+                            putExtra(POSITION, position)
+                        }
+                    )
                 }
             }
 

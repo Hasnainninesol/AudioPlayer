@@ -1,7 +1,7 @@
 package com.example.audioplayer.appclass
 
 import android.app.Application
-import com.example.audioplayer.mvvm.ViewModel
+import com.example.audioplayer.viewmodel.ViewModel
 import com.example.audioplayer.repository.AudioRepo
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
