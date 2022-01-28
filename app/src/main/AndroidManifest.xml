@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
         android:name=".appclass.MyApplication"
@@ -31,10 +32,12 @@
 
         <service
             android:name=".services.MusicService"
-            android:exported="true" />
+            android:exported="true"
+             />
         <receiver
             android:name=".services.broadcast.NotificationReceiver"
-            android:exported="true">
+            android:exported="true"
+            >
             <intent-filter>
                 <action android:name="com.example.audioplayer.Play" />
             </intent-filter>

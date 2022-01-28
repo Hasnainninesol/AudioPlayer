@@ -117,7 +117,7 @@ class MusicService : Service() {
                 )
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .build()
-        startForeground(1, notification)
+        startForeground(2, notification)
     }
 
     fun isPlaying(): Boolean {
