@@ -1,139 +1,138 @@
 package com.example.audioplayer.activites
 
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.Handler
-import android.view.View
-import android.widget.SeekBar
+import android.os.IBinder
 import com.example.audioplayer.POSITION
+import com.example.audioplayer.R
 import com.example.audioplayer.appclass.BaseActivity
 import com.example.audioplayer.databinding.ActivityPlayerBinding
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
+import com.example.audioplayer.interfaces.ActionInterface
+import com.example.audioplayer.services.MusicService
+import com.example.audioplayer.viewmodel.ViewModel.Companion.songList
 
-class PlayerActivity : BaseActivity(), Player.Listener {
+class PlayerActivity : BaseActivity(), ServiceConnection, ActionInterface {
     private var position = -1
-    private lateinit var exoPlayer: ExoPlayer
     private lateinit var _binding: ActivityPlayerBinding
     private val binding get() = _binding
+    private var myMusicService: MusicService = MusicService()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        init()
         observer()
+        init()
         if (position != -1) {
             newSongPlay()
         }
+    }
+
+    override fun onResume() {
+        val intent = Intent(this, MusicService::class.java)
+        bindService(intent, this, BIND_AUTO_CREATE)
         with(binding)
         {
-            btnPlay.setOnClickListener { playSong() }
-            btnPause.setOnClickListener { pauseSong() }
-            seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-                    exoPlayer.seekTo(p1.toLong())
-
-                }
-
-                override fun onStartTrackingTouch(p0: SeekBar?) {
-
-                }
-
-                override fun onStopTrackingTouch(p0: SeekBar?) {
-                    exoPlayer.play()
-                }
-
-            })
+            btnPlay.setOnClickListener { btnPlay() }
+            btnBack.setOnClickListener { backBtnClick() }
+            btnNext.setOnClickListener { nextBtnClick() }
         }
-        runOnUiThread {
-            Handler().postDelayed({
-                if (exoPlayer.isPlaying) {
-                    val mCurrentPosition: Int = (exoPlayer.currentPosition.toInt())
-                    binding.seekBar.progress = mCurrentPosition
-                    getCurrentTimer()
-                }
-            }, 500)
-        }
-
-
+        super.onResume()
     }
 
     private fun observer() {
         mViewModel.isPlay.observe(this) {
             if (it) {
-                with(binding) {
-                    btnPause.visibility = View.VISIBLE
-                    btnPlay.visibility = View.GONE
-                }
+                with(binding) { btnPlay.icon = getDrawable(R.drawable.ic_baseline_pause_24) }
             }
         }
         mViewModel.isPause.observe(this) {
             if (it) {
-                with(binding) {
-                    btnPause.visibility = View.GONE
-                    btnPlay.visibility = View.VISIBLE
-                }
+                with(binding) { btnPlay.icon = getDrawable(R.drawable.ic_baseline_play_arrow_24) }
             }
+        }
+        mViewModel.songName.observe(this) {
+            with(binding)
+            {
+                songTitle.text = it
+            }
+        }
+        mViewModel.songPosition.observe(this) {
+            position = it
         }
     }
 
     private fun init() {
-        exoPlayer = ExoPlayer.Builder(this).build()
-        exoPlayer.addListener(this)
         position = intent.getIntExtra(POSITION, -1)
+        mViewModel.setPosition(position)
     }
 
-    private fun pauseSong() {
-        if (exoPlayer.isPlaying) {
-            mViewModel.setIsPlay(false)
-            mViewModel.setIsPause(true)
-            exoPlayer.pause()
-        }
+    private fun play() {
+        mViewModel.setIsPlay(true)
+        mViewModel.setIsPause(false)
     }
 
-    private fun playSong() {
-        if (!exoPlayer.isPlaying) {
-            mViewModel.setIsPlay(true)
-            mViewModel.setIsPause(false)
-            exoPlayer.play()
+    private fun pause() {
+        with(mViewModel) {
+            setIsPlay(false)
+            setIsPause(true)
         }
     }
 
     private fun newSongPlay() {
-        with(binding)
-        {
-            songTitle.text = mViewModel.songList.value!![position].name
-            mViewModel.setIsPause(false)
-            mViewModel.setIsPlay(true)
+        mViewModel.setSongName(songList.value!![position].name)
+        mViewModel.setIsPause(false)
+        mViewModel.setIsPlay(true)
+        val intent = Intent(this, MusicService::class.java).apply {
+            putExtra(POSITION, position)
         }
-        if (exoPlayer.isPlaying) {
-            exoPlayer.release()
+        startService(intent)
+
+    }
+
+    override fun btnPlay() {
+        if (myMusicService.isPlaying()) {
+            myMusicService.pause()
+            myMusicService.createNotification(R.drawable.ic_baseline_play_arrow_24, position)
+            pause()
+        } else {
+            myMusicService.play()
+            myMusicService.createNotification(R.drawable.ic_baseline_pause_24, position)
+            play()
         }
-        val mediaItem: MediaItem = MediaItem.fromUri(mViewModel.songList.value!![position].uri)
-        exoPlayer.setMediaItem(mediaItem)
-        exoPlayer.prepare()
-        exoPlayer.play()
-        getDurationTimer()
 
     }
 
-    private fun getDurationTimer() {
-        binding.seekBar.max = (exoPlayer.duration / 1000).toInt()
-        val minutes: Long = exoPlayer.duration / 1000 / 60
-        val seconds = (exoPlayer.duration / 1000 % 60).toInt()
-        binding.totalTime.text = "$minutes:$seconds"
+    override fun backBtnClick() {
+        myMusicService.stop()
+        position = ((position - 1) % songList.value!!.size)
+        mViewModel.setSongName(songList.value!![position].name)
+        play()
+        myMusicService.createNotification(R.drawable.ic_baseline_pause_24, position)
+        myMusicService.createMediaPlayer(position)
+        myMusicService.play()
     }
 
-    private fun getCurrentTimer() {
-        val mMinutes = (exoPlayer.duration / 1000) / 60
-        val mSeconds = ((exoPlayer.duration / 1000) % 60)
-        binding.currentTime.text = "$mMinutes:$mSeconds"
+    override fun nextBtnClick() {
+        myMusicService.stop()
+        position = ((position + 1) % songList.value!!.size)
+        mViewModel.setSongName(songList.value!![position].name)
+        play()
+        myMusicService.createNotification(R.drawable.ic_baseline_pause_24, position)
+        myMusicService.createMediaPlayer(position)
+        myMusicService.play()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        exoPlayer.release()
+    override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
+        val myBinder = p1 as MusicService.MyBinder
+        myMusicService = myBinder.getServices()
+        myMusicService.setCallBack(this)
+        myMusicService.createNotification(R.drawable.ic_baseline_pause_24, position)
+        myMusicService.play()
     }
 
-
+    override fun onServiceDisconnected(p0: ComponentName?) {
+        myMusicService.apply { null }
+    }
 }

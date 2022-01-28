@@ -8,6 +8,7 @@ import com.example.audioplayer.adaptor.SongAdaptor
 import com.example.audioplayer.appclass.BaseActivity
 import com.example.audioplayer.databinding.ActivityMainBinding
 import com.example.audioplayer.extension.isPermission
+import com.example.audioplayer.viewmodel.ViewModel.Companion.songList
 
 class MainActivity : BaseActivity() {
     private lateinit var _binding: ActivityMainBinding
@@ -40,7 +41,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun initObserver() {
-        mViewModel.songList.observe(this@MainActivity) {
+        songList.observe(this@MainActivity) {
             binding.tvSize.text = "Total Songs: ${it.size}"
             progressDialog.dismiss()
             mAdaptor.updateList(it)

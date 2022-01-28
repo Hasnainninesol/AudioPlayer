@@ -14,7 +14,13 @@ class ViewModel(application: Application, private val audioRepo: AudioRepo) :
     var isPlay: MutableLiveData<Boolean> = MutableLiveData()
     var isPause: MutableLiveData<Boolean> = MutableLiveData()
     var songName: MutableLiveData<String> = MutableLiveData()
-    var songList: MutableLiveData<ArrayList<Songs>> = MutableLiveData()
+    var songPosition: MutableLiveData<Int> = MutableLiveData()
+    companion object{
+        var songList: MutableLiveData<ArrayList<Songs>> = MutableLiveData()
+    }
+
+
+
     fun getAllSongs() {
         CoroutineScope(Dispatchers.IO).launch {
             audioRepo.loadFiles()
@@ -24,14 +30,17 @@ class ViewModel(application: Application, private val audioRepo: AudioRepo) :
     }
 
     fun setIsPlay(boolean: Boolean) {
-        isPlay!!.postValue(boolean)
+        isPlay.postValue(boolean)
     }
 
     fun setIsPause(boolean: Boolean) {
-        isPause!!.postValue(boolean)
+        isPause.postValue(boolean)
     }
 
     fun setSongName(name: String) {
-        songName!!.postValue(name)
+        songName.postValue(name)
+    }
+    fun setPosition(position: Int) {
+        songPosition.postValue(position)
     }
 }
