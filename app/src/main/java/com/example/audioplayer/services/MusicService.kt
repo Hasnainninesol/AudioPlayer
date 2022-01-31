@@ -7,11 +7,12 @@ import android.app.Service
 import android.content.Intent
 import android.net.Uri
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.example.audioplayer.*
-import com.example.audioplayer.activites.PlayerActivity
 import com.example.audioplayer.interfaces.ActionInterface
 import com.example.audioplayer.modelclass.Songs
 import com.example.audioplayer.services.broadcast.NotificationReceiver
@@ -28,6 +29,7 @@ class MusicService : Service() {
     private var musicFiles: ArrayList<Songs> = ArrayList()
     private var uri: Uri? = null
     private var position = -1
+    private var isPause = false
     override fun onBind(p0: Intent?): IBinder {
         return mBinder
     }
@@ -86,8 +88,6 @@ class MusicService : Service() {
     @SuppressLint("UnspecifiedImmutableFlag")
     fun createNotification(playPause: Int, position: Int) {
         this.position = position
-     /*   val intent = Intent(this, PlayerActivity::class.java)
-        val contentPending = PendingIntent.getActivity(this, 0, intent, 0)*/
         val pauseIntent =
             Intent(this, NotificationReceiver::class.java).setAction(ACTION_PLAY)
         val pausePending =
@@ -110,14 +110,24 @@ class MusicService : Service() {
                 .addAction(R.drawable.ic_baseline_arrow_forward_24, "Next", nextPending)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setOnlyAlertOnce(true)
-               /* .setContentIntent(contentPending)*/
+                .setAutoCancel(true)
                 .setStyle(
                     androidx.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(mediaSeason!!.sessionToken)
                 )
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .build()
-        startForeground(2, notification)
+        if (!isPause) {
+            startForeground(2, notification)
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(STOP_FOREGROUND_DETACH)
+                with(NotificationManagerCompat.from(this)) {
+                    notify(2, notification)
+                }
+            }
+        }
+
     }
 
     fun isPlaying(): Boolean {
@@ -130,10 +140,12 @@ class MusicService : Service() {
 
     fun pause() {
         exoPlayer.pause()
+        isPause = true
     }
 
     fun play() {
         exoPlayer.play()
+        isPause = false
     }
 
 
@@ -152,8 +164,8 @@ class MusicService : Service() {
     fun stop() {
         exoPlayer.stop()
     }
-
-    private fun release() {
-        exoPlayer.release()
+    override fun onDestroy() {
+        super.onDestroy()
+        stopService(Intent(this, MusicService::class.java))
     }
 }

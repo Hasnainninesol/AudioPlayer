@@ -88,7 +88,6 @@ class PlayerActivity : BaseActivity(), ServiceConnection, ActionInterface {
             putExtra(POSITION, position)
         }
         startService(intent)
-
     }
 
     override fun btnPlay() {
@@ -101,7 +100,6 @@ class PlayerActivity : BaseActivity(), ServiceConnection, ActionInterface {
             myMusicService.createNotification(R.drawable.ic_baseline_pause_24, position)
             play()
         }
-
     }
 
     override fun backBtnClick() {
