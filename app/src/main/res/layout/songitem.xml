@@ -35,7 +35,12 @@
                 android:text="kali Kali Zulfon k Phandy Na dalo.mp3"
                 android:textColor="@color/black"
                 android:textIsSelectable="true" />
-
+            <ImageView
+                android:id="@+id/btnOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_baseline_more_vert_24"
+                android:layout_gravity="center_vertical|right"/>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

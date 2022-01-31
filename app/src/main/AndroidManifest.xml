@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.audioplayer">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.SET_ALARM" />
+    <uses-permission
+        android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:name=".appclass.MyApplication"
@@ -32,16 +37,18 @@
 
         <service
             android:name=".services.MusicService"
-            android:exported="true"
-             />
+            android:exported="true" />
+
         <receiver
             android:name=".services.broadcast.NotificationReceiver"
-            android:exported="true"
-            >
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.example.audioplayer.Play" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".services.broadcast.AlarmReceiver"
+            android:process=":remote" />
     </application>
 
 </manifest>

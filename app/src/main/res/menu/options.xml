@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group>
+        <item
+            android:id="@+id/btnSetAsRingTone"
+            android:icon="@drawable/ic_baseline_phone_callback_24"
+            android:title="Set As Ringtone" />
+    </group>
+    <group>
+        <item
+            android:id="@+id/btnSetAsMessage"
+            android:icon="@drawable/ic_baseline_notifications_active_24"
+            android:title="Set As Notification" />
+    </group>
+
+    <group>
+        <item
+            android:id="@+id/btnDelete"
+            android:icon="@drawable/ic_baseline_delete_24"
+            android:title="Delete" />
+    </group>
+</menu>

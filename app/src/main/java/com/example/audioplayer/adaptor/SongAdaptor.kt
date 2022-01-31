@@ -8,10 +8,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.audioplayer.POSITION
 import com.example.audioplayer.activites.PlayerActivity
 import com.example.audioplayer.databinding.SongitemBinding
+import com.example.audioplayer.interfaces.OptionClickListener
 import com.example.audioplayer.modelclass.Songs
 
 
-class SongAdaptor(val context: Context) :
+class SongAdaptor(val context: Context, val clickListener: OptionClickListener) :
     RecyclerView.Adapter<SongAdaptor.MyViewHolder>() {
     private var mData = ArrayList<Songs>()
 
@@ -36,6 +37,7 @@ class SongAdaptor(val context: Context) :
                         }
                     )
                 }
+                btnOptions.setOnClickListener { clickListener.setOptions(position, it) }
             }
 
         }
